@@ -15,6 +15,7 @@
 --white:#fff;
 --success:#22c55e;
 --warning:#f59e0b;
+--danger:#ef4444;
 }
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Inter';}
 body{background:var(--bg);}
@@ -55,11 +56,16 @@ grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
 gap:10px;
 }
 
+.field{
+display:flex;
+flex-direction:column;
+font-size:12px;
+}
+
 input{
 padding:8px;
 border:1px solid #ccc;
 border-radius:6px;
-width:100%;
 }
 
 button{
@@ -71,6 +77,16 @@ cursor:pointer;
 
 .btn-add{background:#e2e8f0;}
 .btn-save{background:var(--success);color:white;margin-top:15px;width:100%;}
+
+.table{
+width:100%;
+border-collapse:collapse;
+}
+.table th,.table td{
+padding:8px;
+border-bottom:1px solid #ddd;
+font-size:12px;
+}
 </style>
 </head>
 
@@ -81,6 +97,7 @@ cursor:pointer;
 <nav>
 <button onclick="showView('home')">Home</button>
 <button onclick="showView('viagens')">Viagens</button>
+<button onclick="showView('relatorio')">Relatório</button>
 </nav>
 </header>
 
@@ -89,7 +106,13 @@ cursor:pointer;
 <!-- HOME -->
 <div id="home" class="view active">
 <div class="card">
-<h3>Dashboard (em construção)</h3>
+<h3>Dashboard</h3><br>
+
+<div>Total Viagens: <b id="total">0</b></div>
+<div>Aprovadas (com valores): <b id="ok">0</b></div>
+<div>Pendentes: <b id="pendente">0</b></div>
+<div>Valor Total: <b id="valor">0</b></div>
+
 </div>
 </div>
 
@@ -100,31 +123,69 @@ cursor:pointer;
 <h3>Nova Viagem</h3><br>
 
 <div class="grid">
-<input placeholder="Gestor" id="gestor">
-<input placeholder="Projeto" id="projeto">
-<input placeholder="Solicitado (data)" type="date" id="solicitado">
-<input placeholder="Email" id="email">
-<input placeholder="Nome completo" id="nome">
-<input placeholder="Almope" id="almope">
-<input placeholder="Motivo da viagem" id="motivo">
-<input placeholder="Sugestão de hotel" id="hotelSugestao">
+
+<div class="field"><label>Gestor</label><input id="gestor"></div>
+<div class="field"><label>Projeto</label><input id="projeto"></div>
+<div class="field"><label>Data Solicitação</label><input type="date" id="solicitado"></div>
+
 </div>
 
-<h4 style="margin-top:15px;">Trechos</h4>
-<div id="trechos"></div>
-<button class="btn-add" onclick="addTrecho()">+ Adicionar Trecho</button>
+<br>
 
-<h4 style="margin-top:15px;">Hospedagem</h4>
-<div id="hoteis"></div>
-<button class="btn-add" onclick="addHotel()">+ Adicionar Hotel</button>
-
-<h4 style="margin-top:15px;">Valores (após cotação)</h4>
 <div class="grid">
-<input placeholder="Valor Passagem" id="valorPassagem">
-<input placeholder="Valor Hospedagem" id="valorHotel">
+
+<div class="field"><label>Email</label><input id="email"></div>
+
+</div>
+
+<br>
+
+<div class="grid">
+
+<div class="field"><label>Nome Completo</label><input id="nome"></div>
+<div class="field"><label>Almope</label><input id="almope"></div>
+<div class="field"><label>Motivo</label><input id="motivo"></div>
+<div class="field"><label>Sugestão Hotel</label><input id="hotelSugestao"></div>
+
+</div>
+
+<h4>Trechos</h4>
+<div id="trechos"></div>
+<button class="btn-add" onclick="addTrecho()">+ Trecho</button>
+
+<h4>Hospedagem</h4>
+<div id="hoteis"></div>
+<button class="btn-add" onclick="addHotel()">+ Hotel</button>
+
+<h4>Valores</h4>
+<div class="grid">
+<div class="field"><label>Passagem</label><input id="valorPassagem"></div>
+<div class="field"><label>Hospedagem</label><input id="valorHotel"></div>
 </div>
 
 <button class="btn-save" onclick="salvar()">Salvar</button>
+
+</div>
+</div>
+
+<!-- RELATORIO -->
+<div id="relatorio" class="view">
+<div class="card">
+<h3>Relatório</h3>
+
+<table class="table">
+<thead>
+<tr>
+<th>Nome</th>
+<th>Projeto</th>
+<th>Gestor</th>
+<th>Data</th>
+<th>Valor</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody id="lista"></tbody>
+</table>
 
 </div>
 </div>
@@ -133,82 +194,113 @@ cursor:pointer;
 
 <script>
 
-let db = [];
+let db=[];
 
 function showView(id){
 document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
 document.getElementById(id).classList.add('active');
+if(id==="home") updateDash();
+if(id==="relatorio") render();
 }
 
 /* TRECHOS */
 function addTrecho(){
-let div = document.createElement('div');
+let div=document.createElement('div');
 div.className="card";
 div.innerHTML=`
 <div class="grid">
-<input placeholder="Origem" class="origem">
-<input placeholder="Destino" class="destino">
-<input type="date" class="ida">
-<input type="date" class="volta">
-<input placeholder="Tipo deslocamento" class="tipo">
+<div class="field"><label>Origem</label><input class="origem"></div>
+<div class="field"><label>Destino</label><input class="destino"></div>
+<div class="field"><label>Ida</label><input type="date" class="ida"></div>
+<div class="field"><label>Volta</label><input type="date" class="volta"></div>
+<div class="field"><label>Tipo</label><input class="tipo"></div>
 </div>`;
-document.getElementById('trechos').appendChild(div);
+trechos.appendChild(div);
 }
 
 /* HOTEL */
 function addHotel(){
-let div = document.createElement('div');
+let div=document.createElement('div');
 div.className="card";
 div.innerHTML=`
 <div class="grid">
-<input placeholder="Hotel" class="nomeHotel">
-<input type="date" class="checkin">
-<input type="date" class="checkout">
+<div class="field"><label>Hotel</label><input class="nomeHotel"></div>
+<div class="field"><label>Check-in</label><input type="date" class="checkin"></div>
+<div class="field"><label>Check-out</label><input type="date" class="checkout"></div>
 </div>`;
-document.getElementById('hoteis').appendChild(div);
+hoteis.appendChild(div);
 }
 
 /* SALVAR */
 function salvar(){
 
-let trechos = Array.from(document.querySelectorAll('#trechos .card')).map(t=>({
+let trechosData=[...document.querySelectorAll('#trechos .card')].map(t=>({
 origem:t.querySelector('.origem').value,
-destino:t.querySelector('.destino').value,
-ida:t.querySelector('.ida').value,
-volta:t.querySelector('.volta').value,
-tipo:t.querySelector('.tipo').value
+destino:t.querySelector('.destino').value
 }));
 
-let hoteis = Array.from(document.querySelectorAll('#hoteis .card')).map(h=>({
-hotel:h.querySelector('.nomeHotel').value,
-checkin:h.querySelector('.checkin').value,
-checkout:h.querySelector('.checkout').value
+let hoteisData=[...document.querySelectorAll('#hoteis .card')].map(h=>({
+hotel:h.querySelector('.nomeHotel').value
 }));
 
-let viagem = {
-gestor:gestor.value,
-projeto:projeto.value,
-solicitado:solicitado.value,
-email:email.value,
+let valorTotal=(Number(valorPassagem.value)||0)+(Number(valorHotel.value)||0);
+
+let obj={
 nome:nome.value,
-almope:almope.value,
-motivo:motivo.value,
-sugestaoHotel:hotelSugestao.value,
-trechos,
-hoteis,
-valorPassagem:valorPassagem.value,
-valorHotel:valorHotel.value
+projeto:projeto.value,
+gestor:gestor.value,
+data:solicitado.value,
+valor:valorTotal
 };
 
-db.push(viagem);
+db.push(obj);
 
-alert("Salvo com sucesso");
-console.log(db);
+/* limpar */
+document.querySelectorAll('input').forEach(i=>i.value="");
+trechos.innerHTML="";
+hoteis.innerHTML="";
+addTrecho();
+addHotel();
+
+updateDash();
+render();
+
+alert("Salvo!");
+}
+
+/* DASH */
+function updateDash(){
+let total=db.length;
+let ok=db.filter(v=>v.valor>0).length;
+let valor=db.reduce((a,b)=>a+b.valor,0);
+
+document.getElementById('total').innerText=total;
+document.getElementById('ok').innerText=ok;
+document.getElementById('pendente').innerText=total-ok;
+document.getElementById('valor').innerText=valor;
+}
+
+/* RELATORIO */
+function render(){
+let html="";
+db.forEach(v=>{
+html+=`
+<tr>
+<td>${v.nome}</td>
+<td>${v.projeto}</td>
+<td>${v.gestor}</td>
+<td>${v.data}</td>
+<td>${v.valor}</td>
+<td>${v.valor>0?'OK':'PENDENTE'}</td>
+</tr>`;
+});
+lista.innerHTML=html;
 }
 
 window.onload=()=>{
 addTrecho();
 addHotel();
+updateDash();
 };
 
 </script>
