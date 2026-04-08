@@ -3,18 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BKO PRO</title>
+<title>BKO Controle</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 :root {
-    --primary: #002f6c;
-    --accent: #00a3e0;
-    --success: #28a745;
-    --warning: #ffc107;
-    --danger: #dc3545;
-    --bg: #f5f7fa;
+    --primary: #2563eb;
+    --bg: #f1f5f9;
     --white: #ffffff;
 }
 
@@ -26,18 +22,25 @@ body {
 
 header {
     background: var(--primary);
-    color: white;
-    padding: 15px;
+    color:white;
+    padding:15px;
+    display:flex;
+    gap:10px;
 }
 
 button {
     padding:10px;
-    margin:5px;
+    border:none;
     cursor:pointer;
+    border-radius:6px;
 }
 
-.section {display:none; padding:20px;}
-.active {display:block;}
+.section {
+    display:none;
+    padding:20px;
+}
+
+.active { display:block; }
 
 .card {
     background:white;
@@ -53,15 +56,20 @@ button {
 }
 
 input {
-    padding:8px;
+    padding:10px;
     width:100%;
 }
 
 table {
     width:100%;
     margin-top:20px;
+    border-collapse: collapse;
 }
 
+th, td {
+    padding:10px;
+    border-bottom:1px solid #ccc;
+}
 </style>
 </head>
 
@@ -69,7 +77,7 @@ table {
 
 <header>
 <button onclick="nav('home')">Home</button>
-<button onclick="nav('viagem')">Viagem</button>
+<button onclick="nav('cadastro')">Cadastro</button>
 <button onclick="nav('relatorio')">Relatório</button>
 </header>
 
@@ -77,43 +85,23 @@ table {
 <div id="home" class="section active">
 
 <div class="grid">
-<div class="card">Total: <b id="h-total">0</b></div>
-<div class="card">OK: <b id="h-ok">0</b></div>
-<div class="card">Pendente: <b id="h-pend">0</b></div>
+<div class="card">Total: <b id="total">0</b></div>
 </div>
 
-<canvas id="chart"></canvas>
+<canvas id="grafico"></canvas>
 
 </div>
 
-<!-- VIAGEM -->
-<div id="viagem" class="section">
+<!-- CADASTRO -->
+<div id="cadastro" class="section">
 
-<h2>Solicitação de Viagem</h2>
+<h2>Novo Registro</h2>
 
 <div class="grid">
-
-<input id="vGestor" placeholder="Gestor">
-<input id="vProjeto" placeholder="Projeto">
-<input type="date" id="vSolicitado">
-
-<input id="vEmail" placeholder="Email" style="grid-column: span 2;">
-<input id="vNome" placeholder="Nome Completo">
-
-<input id="vAlmope" placeholder="Almope">
-<input id="vMotivo" placeholder="Motivo">
-
-<input id="vOrigem" placeholder="Origem">
-<input id="vDestino" placeholder="Destino">
-
-<input type="date" id="vIda">
-<input type="date" id="vVolta">
-
-<input id="vHotel" placeholder="Hotel">
-
-<input type="number" id="vPassagem" placeholder="Valor Passagem">
-<input type="number" id="vHospedagem" placeholder="Valor Hospedagem">
-
+<input id="nome" placeholder="Nome">
+<input id="tipo" placeholder="Tipo (Viagem / Reembolso / Correios)">
+<input id="data" type="date">
+<input id="valor" type="number" placeholder="Valor">
 </div>
 
 <button onclick="salvar()">Salvar</button>
@@ -123,13 +111,14 @@ table {
 <!-- RELATORIO -->
 <div id="relatorio" class="section">
 
+<h2>Relatório</h2>
+
 <table>
 <thead>
 <tr>
 <th>Nome</th>
-<th>Projeto</th>
-<th>Aprovações</th>
-<th>Status</th>
+<th>Tipo</th>
+<th>Data</th>
 <th>Valor</th>
 </tr>
 </thead>
@@ -142,7 +131,7 @@ table {
 
 <script>
 
-let db = JSON.parse(localStorage.getItem('bko')) || []
+let db = JSON.parse(localStorage.getItem('bko_app')) || []
 let chart
 
 function nav(t){
@@ -155,27 +144,15 @@ if(t==='relatorio') render()
 
 function salvar(){
 
-let v = {
-gestor:vGestor.value,
-projeto:vProjeto.value,
-solicitado:vSolicitado.value,
-email:vEmail.value,
-nome:vNome.value,
-almope:vAlmope.value,
-motivo:vMotivo.value,
-origem:vOrigem.value,
-destino:vDestino.value,
-ida:vIda.value,
-volta:vVolta.value,
-hotel:vHotel.value,
-valorPassagem:parseFloat(vPassagem.value)||0,
-valorHospedagem:parseFloat(vHospedagem.value)||0,
-
-ap:{gg:false,mv:false,fc:false,hc:false}
+let item = {
+nome: nome.value,
+tipo: tipo.value,
+data: data.value,
+valor: parseFloat(valor.value)||0
 }
 
-db.push(v)
-localStorage.setItem('bko', JSON.stringify(db))
+db.push(item)
+localStorage.setItem('bko_app', JSON.stringify(db))
 
 document.querySelectorAll('input').forEach(i=>i.value="")
 
@@ -186,23 +163,13 @@ function render(){
 
 lista.innerHTML=""
 
-db.forEach((v,i)=>{
-
-let total = v.valorPassagem + v.valorHospedagem
-let ok = v.ap.gg && v.ap.mv && v.ap.fc && v.ap.hc
-
+db.forEach(v=>{
 lista.innerHTML += `
 <tr>
 <td>${v.nome}</td>
-<td>${v.projeto}</td>
-<td>
-GG ${v.ap.gg?'✔️':'❌'}<br>
-MV ${v.ap.mv?'✔️':'❌'}<br>
-FC ${v.ap.fc?'✔️':'❌'}<br>
-HC ${v.ap.hc?'✔️':'❌'}
-</td>
-<td>${ok?'APROVADO':'PENDENTE'}</td>
-<td>R$ ${total}</td>
+<td>${v.tipo}</td>
+<td>${v.data}</td>
+<td>R$ ${v.valor}</td>
 </tr>
 `
 })
@@ -211,21 +178,17 @@ HC ${v.ap.hc?'✔️':'❌'}
 
 function dash(){
 
-let ok = db.filter(v=>v.ap.gg && v.ap.mv && v.ap.fc && v.ap.hc).length
-let total = db.length
-
-document.getElementById('h-total').innerText = total
-document.getElementById('h-ok').innerText = ok
-document.getElementById('h-pend').innerText = total-ok
+document.getElementById('total').innerText = db.length
 
 if(chart) chart.destroy()
 
-chart = new Chart(document.getElementById('chart'),{
-type:'doughnut',
+chart = new Chart(document.getElementById('grafico'),{
+type:'bar',
 data:{
-labels:['Aprovado','Pendente'],
+labels: db.map(v=>v.nome),
 datasets:[{
-data:[ok,total-ok]
+label:'Valores',
+data: db.map(v=>v.valor)
 }]
 }
 })
