@@ -3,307 +3,136 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BKO Controle</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-
+<title>BKO PRO - Merlin</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-:root {
---primary:#1e293b;
---accent:#3b82f6;
---bg:#f1f5f9;
---white:#fff;
---success:#22c55e;
---warning:#f59e0b;
---danger:#ef4444;
-}
-*{margin:0;padding:0;box-sizing:border-box;font-family:'Inter';}
-body{background:var(--bg);}
-
-header{
-background:var(--primary);
-color:white;
-padding:15px;
-display:flex;
-justify-content:space-between;
-}
-
-nav button{
-background:transparent;
-border:none;
-color:white;
-margin:0 5px;
-cursor:pointer;
-font-weight:600;
-}
-
-main{padding:20px;}
-
-.view{display:none;}
-.view.active{display:block;}
-
-.card{
-background:white;
-padding:20px;
-border-radius:10px;
-margin-bottom:15px;
-box-shadow:0 3px 10px rgba(0,0,0,0.05);
-}
-
-.grid{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
-gap:10px;
-}
-
-.field{
-display:flex;
-flex-direction:column;
-font-size:12px;
-}
-
-input{
-padding:8px;
-border:1px solid #ccc;
-border-radius:6px;
-}
-
-button{
-padding:10px;
-border:none;
-border-radius:6px;
-cursor:pointer;
-}
-
-.btn-add{background:#e2e8f0;}
-.btn-save{background:var(--success);color:white;margin-top:15px;width:100%;}
-
-.table{
-width:100%;
-border-collapse:collapse;
-}
-.table th,.table td{
-padding:8px;
-border-bottom:1px solid #ddd;
-font-size:12px;
-}
+body{font-family:Arial;background:#0f172a;color:#e2e8f0;margin:0}
+header{background:#020617;padding:15px;display:flex;gap:10px}
+button{padding:10px;border:none;border-radius:8px;cursor:pointer}
+.nav{background:#1e293b;color:white}
+.active{background:#38bdf8}
+.section{display:none;padding:20px}
+.section.active{display:block}
+.card{background:#1e293b;padding:15px;border-radius:12px;margin-bottom:15px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+input{width:100%;padding:8px;border-radius:6px;border:none;margin-top:5px}
+table{width:100%;margin-top:20px;border-collapse:collapse}
+th,td{padding:10px;border-bottom:1px solid #334155}
 </style>
 </head>
-
 <body>
-
 <header>
-<div>BKO</div>
-<nav>
-<button onclick="showView('home')">Home</button>
-<button onclick="showView('viagens')">Viagens</button>
-<button onclick="showView('relatorio')">Relatório</button>
-</nav>
+<button class="nav active" onclick="nav('home')">Home</button>
+<button class="nav" onclick="nav('viagem')">Viagem</button>
+<button class="nav" onclick="nav('relatorio')">Relatório</button>
 </header>
 
-<main>
+<div id="home" class="section active">
+<div class="grid">
+<div class="card"><h3>Total Viagens</h3><h1 id="total">0</h1></div>
+<div class="card"><h3>Aprovadas</h3><h1 id="ok">0</h1></div>
+<div class="card"><h3>Pendentes</h3><h1 id="pend">0</h1></div>
+<div class="card"><h3>Valor Total</h3><h1 id="valor">R$0</h1></div>
+</div>
+<canvas id="chart"></canvas>
+</div>
 
-<!-- HOME -->
-<div id="home" class="view active">
+<div id="viagem" class="section">
 <div class="card">
-<h3>Dashboard</h3><br>
-
-<div>Total Viagens: <b id="total">0</b></div>
-<div>Aprovadas (com valores): <b id="ok">0</b></div>
-<div>Pendentes: <b id="pendente">0</b></div>
-<div>Valor Total: <b id="valor">0</b></div>
-
+<h2>Nova Viagem</h2>
+<div class="grid">
+<input id="nome" placeholder="Nome">
+<input id="email" placeholder="Email">
+<input id="gestor" placeholder="Gestor">
+<input id="projeto" placeholder="Projeto">
+<input id="origem" placeholder="Origem">
+<input id="destino" placeholder="Destino">
+<input id="ida" type="date">
+<input id="volta" type="date">
+<input id="hotel" placeholder="Hotel">
+<input id="valorPassagem" placeholder="Valor Passagem">
+<input id="valorHotel" placeholder="Valor Hotel">
+</div>
+<button onclick="salvar()">Salvar</button>
 </div>
 </div>
 
-<!-- VIAGENS -->
-<div id="viagens" class="view">
+<div id="relatorio" class="section">
 <div class="card">
-
-<h3>Nova Viagem</h3><br>
-
-<div class="grid">
-
-<div class="field"><label>Gestor</label><input id="gestor"></div>
-<div class="field"><label>Projeto</label><input id="projeto"></div>
-<div class="field"><label>Data Solicitação</label><input type="date" id="solicitado"></div>
-
-</div>
-
-<br>
-
-<div class="grid">
-
-<div class="field"><label>Email</label><input id="email"></div>
-
-</div>
-
-<br>
-
-<div class="grid">
-
-<div class="field"><label>Nome Completo</label><input id="nome"></div>
-<div class="field"><label>Almope</label><input id="almope"></div>
-<div class="field"><label>Motivo</label><input id="motivo"></div>
-<div class="field"><label>Sugestão Hotel</label><input id="hotelSugestao"></div>
-
-</div>
-
-<h4>Trechos</h4>
-<div id="trechos"></div>
-<button class="btn-add" onclick="addTrecho()">+ Trecho</button>
-
-<h4>Hospedagem</h4>
-<div id="hoteis"></div>
-<button class="btn-add" onclick="addHotel()">+ Hotel</button>
-
-<h4>Valores</h4>
-<div class="grid">
-<div class="field"><label>Passagem</label><input id="valorPassagem"></div>
-<div class="field"><label>Hospedagem</label><input id="valorHotel"></div>
-</div>
-
-<button class="btn-save" onclick="salvar()">Salvar</button>
-
-</div>
-</div>
-
-<!-- RELATORIO -->
-<div id="relatorio" class="view">
-<div class="card">
-<h3>Relatório</h3>
-
-<table class="table">
+<h2>Relatório</h2>
+<table>
 <thead>
-<tr>
-<th>Nome</th>
-<th>Projeto</th>
-<th>Gestor</th>
-<th>Data</th>
-<th>Valor</th>
-<th>Status</th>
-</tr>
+<tr><th>Nome</th><th>Projeto</th><th>Status</th><th>Valor</th></tr>
 </thead>
 <tbody id="lista"></tbody>
 </table>
-
 </div>
 </div>
-
-</main>
 
 <script>
+let db = JSON.parse(localStorage.getItem('bko2'))||[]
+let chart
 
-let db=[];
-
-function showView(id){
-document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-document.getElementById(id).classList.add('active');
-if(id==="home") updateDash();
-if(id==="relatorio") render();
+function nav(id){
+document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'))
+document.getElementById(id).classList.add('active')
+if(id==='home')dash()
+if(id==='relatorio')render()
 }
 
-/* TRECHOS */
-function addTrecho(){
-let div=document.createElement('div');
-div.className="card";
-div.innerHTML=`
-<div class="grid">
-<div class="field"><label>Origem</label><input class="origem"></div>
-<div class="field"><label>Destino</label><input class="destino"></div>
-<div class="field"><label>Ida</label><input type="date" class="ida"></div>
-<div class="field"><label>Volta</label><input type="date" class="volta"></div>
-<div class="field"><label>Tipo</label><input class="tipo"></div>
-</div>`;
-trechos.appendChild(div);
-}
-
-/* HOTEL */
-function addHotel(){
-let div=document.createElement('div');
-div.className="card";
-div.innerHTML=`
-<div class="grid">
-<div class="field"><label>Hotel</label><input class="nomeHotel"></div>
-<div class="field"><label>Check-in</label><input type="date" class="checkin"></div>
-<div class="field"><label>Check-out</label><input type="date" class="checkout"></div>
-</div>`;
-hoteis.appendChild(div);
-}
-
-/* SALVAR */
 function salvar(){
-
-let trechosData=[...document.querySelectorAll('#trechos .card')].map(t=>({
-origem:t.querySelector('.origem').value,
-destino:t.querySelector('.destino').value
-}));
-
-let hoteisData=[...document.querySelectorAll('#hoteis .card')].map(h=>({
-hotel:h.querySelector('.nomeHotel').value
-}));
-
-let valorTotal=(Number(valorPassagem.value)||0)+(Number(valorHotel.value)||0);
-
-let obj={
+let v={
 nome:nome.value,
-projeto:projeto.value,
+email:email.value,
 gestor:gestor.value,
-data:solicitado.value,
-valor:valorTotal
-};
-
-db.push(obj);
-
-/* limpar */
-document.querySelectorAll('input').forEach(i=>i.value="");
-trechos.innerHTML="";
-hoteis.innerHTML="";
-addTrecho();
-addHotel();
-
-updateDash();
-render();
-
-alert("Salvo!");
+projeto:projeto.value,
+origem:origem.value,
+destino:destino.value,
+ida:ida.value,
+volta:volta.value,
+hotel:hotel.value,
+valorPassagem:+valorPassagem.value||0,
+valorHotel:+valorHotel.value||0,
+status:'PENDENTE'
+}
+db.push(v)
+localStorage.setItem('bko2',JSON.stringify(db))
+alert('Salvo')
+document.querySelectorAll('input').forEach(i=>i.value='')
+nav('relatorio')
 }
 
-/* DASH */
-function updateDash(){
-let total=db.length;
-let ok=db.filter(v=>v.valor>0).length;
-let valor=db.reduce((a,b)=>a+b.valor,0);
-
-document.getElementById('total').innerText=total;
-document.getElementById('ok').innerText=ok;
-document.getElementById('pendente').innerText=total-ok;
-document.getElementById('valor').innerText=valor;
-}
-
-/* RELATORIO */
 function render(){
-let html="";
+lista.innerHTML=''
 db.forEach(v=>{
-html+=`
-<tr>
+let total=v.valorPassagem+v.valorHotel
+lista.innerHTML+=`<tr>
 <td>${v.nome}</td>
 <td>${v.projeto}</td>
-<td>${v.gestor}</td>
-<td>${v.data}</td>
-<td>${v.valor}</td>
-<td>${v.valor>0?'OK':'PENDENTE'}</td>
-</tr>`;
-});
-lista.innerHTML=html;
+<td>${v.status}</td>
+<td>R$${total}</td>
+</tr>`
+})
 }
 
-window.onload=()=>{
-addTrecho();
-addHotel();
-updateDash();
-};
+function dash(){
+let ok=db.filter(v=>v.status==='OK').length
+let total=db.length
+let valor=db.reduce((s,v)=>s+v.valorHotel+v.valorPassagem,0)
 
+document.getElementById('total').innerText=total
+okEl=document.getElementById('ok').innerText=ok
+pend=document.getElementById('pend').innerText=total-ok
+document.getElementById('valor').innerText='R$'+valor
+
+if(chart)chart.destroy()
+chart=new Chart(document.getElementById('chart'),{
+type:'doughnut',
+data:{labels:['OK','Pendente'],datasets:[{data:[ok,total-ok]}]}
+})
+}
+
+window.onload=dash
 </script>
-
 </body>
 </html>
