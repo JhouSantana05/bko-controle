@@ -1,90 +1,216 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>App Controle BKO - Merlin Dev</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BKO Controle</title>
 
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 
-    <style>
-        :root {
-            --primary: #2c3e50; --accent: #3498db; --success: #2ecc71;
-            --warning: #f1c40f; --danger: #e74c3c; --bg: #f4f7f6;
-        }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter'; }
-        body { background: var(--bg); }
+<style>
+:root {
+--primary:#1e293b;
+--accent:#3b82f6;
+--bg:#f1f5f9;
+--white:#fff;
+--success:#22c55e;
+--warning:#f59e0b;
+}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Inter';}
+body{background:var(--bg);}
 
-        header {
-            background: var(--primary);
-            color: white;
-            padding: 1rem;
-            display: flex;
-            justify-content: space-between;
-        }
+header{
+background:var(--primary);
+color:white;
+padding:15px;
+display:flex;
+justify-content:space-between;
+}
 
-        nav { display: flex; gap: 10px; }
+nav button{
+background:transparent;
+border:none;
+color:white;
+margin:0 5px;
+cursor:pointer;
+font-weight:600;
+}
 
-        .nav-btn {
-            background: rgba(255,255,255,0.1);
-            border: none;
-            color: white;
-            padding: 8px 15px;
-            cursor: pointer;
-            border-radius: 6px;
-        }
+main{padding:20px;}
 
-        .nav-btn.active { background: var(--accent); }
+.view{display:none;}
+.view.active{display:block;}
 
-        .view-section { display: none; padding: 20px; }
-        .view-section.active { display: block; }
-    </style>
+.card{
+background:white;
+padding:20px;
+border-radius:10px;
+margin-bottom:15px;
+box-shadow:0 3px 10px rgba(0,0,0,0.05);
+}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+gap:10px;
+}
+
+input{
+padding:8px;
+border:1px solid #ccc;
+border-radius:6px;
+width:100%;
+}
+
+button{
+padding:10px;
+border:none;
+border-radius:6px;
+cursor:pointer;
+}
+
+.btn-add{background:#e2e8f0;}
+.btn-save{background:var(--success);color:white;margin-top:15px;width:100%;}
+</style>
 </head>
 
 <body>
 
 <header>
-    <div>BKO PRINCIPAL</div>
-    <nav>
-        <button class="nav-btn active" data-view="home">Home</button>
-        <button class="nav-btn" data-view="viagens">+ Viagem</button>
-        <button class="nav-btn" data-view="lista">Relatório</button>
-    </nav>
+<div>BKO</div>
+<nav>
+<button onclick="showView('home')">Home</button>
+<button onclick="showView('viagens')">Viagens</button>
+</nav>
 </header>
 
-<section id="home" class="view-section active">
-    <h2>Home</h2>
-</section>
+<main>
 
-<section id="viagens" class="view-section">
-    <h2>Viagens</h2>
-</section>
+<!-- HOME -->
+<div id="home" class="view active">
+<div class="card">
+<h3>Dashboard (em construção)</h3>
+</div>
+</div>
 
-<section id="lista" class="view-section">
-    <h2>Relatório</h2>
-</section>
+<!-- VIAGENS -->
+<div id="viagens" class="view">
+<div class="card">
+
+<h3>Nova Viagem</h3><br>
+
+<div class="grid">
+<input placeholder="Gestor" id="gestor">
+<input placeholder="Projeto" id="projeto">
+<input placeholder="Solicitado (data)" type="date" id="solicitado">
+<input placeholder="Email" id="email">
+<input placeholder="Nome completo" id="nome">
+<input placeholder="Almope" id="almope">
+<input placeholder="Motivo da viagem" id="motivo">
+<input placeholder="Sugestão de hotel" id="hotelSugestao">
+</div>
+
+<h4 style="margin-top:15px;">Trechos</h4>
+<div id="trechos"></div>
+<button class="btn-add" onclick="addTrecho()">+ Adicionar Trecho</button>
+
+<h4 style="margin-top:15px;">Hospedagem</h4>
+<div id="hoteis"></div>
+<button class="btn-add" onclick="addHotel()">+ Adicionar Hotel</button>
+
+<h4 style="margin-top:15px;">Valores (após cotação)</h4>
+<div class="grid">
+<input placeholder="Valor Passagem" id="valorPassagem">
+<input placeholder="Valor Hospedagem" id="valorHotel">
+</div>
+
+<button class="btn-save" onclick="salvar()">Salvar</button>
+
+</div>
+</div>
+
+</main>
 
 <script>
-document.addEventListener("DOMContentLoaded", () => {
 
-    function showView(id) {
-        document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
+let db = [];
 
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-        document.querySelector(`[data-view="${id}"]`).classList.add('active');
-    }
+function showView(id){
+document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+document.getElementById(id).classList.add('active');
+}
 
-    document.querySelectorAll('.nav-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const view = btn.getAttribute('data-view');
-            showView(view);
-        });
-    });
+/* TRECHOS */
+function addTrecho(){
+let div = document.createElement('div');
+div.className="card";
+div.innerHTML=`
+<div class="grid">
+<input placeholder="Origem" class="origem">
+<input placeholder="Destino" class="destino">
+<input type="date" class="ida">
+<input type="date" class="volta">
+<input placeholder="Tipo deslocamento" class="tipo">
+</div>`;
+document.getElementById('trechos').appendChild(div);
+}
 
-});
+/* HOTEL */
+function addHotel(){
+let div = document.createElement('div');
+div.className="card";
+div.innerHTML=`
+<div class="grid">
+<input placeholder="Hotel" class="nomeHotel">
+<input type="date" class="checkin">
+<input type="date" class="checkout">
+</div>`;
+document.getElementById('hoteis').appendChild(div);
+}
+
+/* SALVAR */
+function salvar(){
+
+let trechos = Array.from(document.querySelectorAll('#trechos .card')).map(t=>({
+origem:t.querySelector('.origem').value,
+destino:t.querySelector('.destino').value,
+ida:t.querySelector('.ida').value,
+volta:t.querySelector('.volta').value,
+tipo:t.querySelector('.tipo').value
+}));
+
+let hoteis = Array.from(document.querySelectorAll('#hoteis .card')).map(h=>({
+hotel:h.querySelector('.nomeHotel').value,
+checkin:h.querySelector('.checkin').value,
+checkout:h.querySelector('.checkout').value
+}));
+
+let viagem = {
+gestor:gestor.value,
+projeto:projeto.value,
+solicitado:solicitado.value,
+email:email.value,
+nome:nome.value,
+almope:almope.value,
+motivo:motivo.value,
+sugestaoHotel:hotelSugestao.value,
+trechos,
+hoteis,
+valorPassagem:valorPassagem.value,
+valorHotel:valorHotel.value
+};
+
+db.push(viagem);
+
+alert("Salvo com sucesso");
+console.log(db);
+}
+
+window.onload=()=>{
+addTrecho();
+addHotel();
+};
+
 </script>
 
 </body>
