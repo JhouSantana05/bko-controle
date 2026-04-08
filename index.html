@@ -7,120 +7,84 @@
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <!-- 🔥 FIREBASE -->
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
     <style>
         :root {
             --primary: #2c3e50; --accent: #3498db; --success: #2ecc71;
-            --warning: #f1c40f; --danger: #e74c3c; --bg: #f4f7f6; --white: #ffffff;
+            --warning: #f1c40f; --danger: #e74c3c; --bg: #f4f7f6;
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background: var(--bg); color: var(--primary); min-height: 100vh; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter'; }
+        body { background: var(--bg); }
 
-        header { background: var(--primary); color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+        header {
+            background: var(--primary);
+            color: white;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+        }
+
         nav { display: flex; gap: 10px; }
-        .nav-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: 600; transition: 0.3s; }
-        .nav-btn:hover { background: rgba(255,255,255,0.2); }
-        .nav-btn.active { background: var(--accent); border-color: var(--accent); }
 
-        main { padding: 2rem; max-width: 1600px; margin: 0 auto; }
-        .view-section { display: none; }
+        .nav-btn {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: white;
+            padding: 8px 15px;
+            cursor: pointer;
+            border-radius: 6px;
+        }
+
+        .nav-btn.active { background: var(--accent); }
+
+        .view-section { display: none; padding: 20px; }
         .view-section.active { display: block; }
-
-        .dash-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 30px; }
-        .dash-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border-top: 5px solid var(--accent); }
-
-        .chart-container { height: 200px; width: 200px; }
     </style>
 </head>
 
 <body>
 
 <header>
-    <div class="logo"><i class="fas fa-paper-plane"></i> BKO PRINCIPAL</div>
+    <div>BKO PRINCIPAL</div>
     <nav>
-        <button class="nav-btn active" onclick="showView('home')">Home</button>
-        <button class="nav-btn" onclick="showView('viagens')">+ Viagem</button>
-        <button class="nav-btn" onclick="showView('lista')">Relatório</button>
+        <button class="nav-btn active" data-view="home">Home</button>
+        <button class="nav-btn" data-view="viagens">+ Viagem</button>
+        <button class="nav-btn" data-view="lista">Relatório</button>
     </nav>
 </header>
 
-<main>
-    <section id="home" class="view-section active">
-        <div class="dash-container">
-            <div class="dash-card">
-                <h3>Viagens do Mês</h3>
-                <div>Total: <b id="h-total">0</b></div>
-                <div>Aprovadas: <b id="h-ok">0</b></div>
-                <div>Pendentes: <b id="h-pend">0</b></div>
-            </div>
-        </div>
-        <canvas id="chartViagens"></canvas>
-    </section>
-</main>
+<section id="home" class="view-section active">
+    <h2>Home</h2>
+</section>
+
+<section id="viagens" class="view-section">
+    <h2>Viagens</h2>
+</section>
+
+<section id="lista" class="view-section">
+    <h2>Relatório</h2>
+</section>
 
 <script>
-/* 🔥 CONFIG FIREBASE */
-const firebaseConfig = {
-  apiKey: "AIzaSyB94R1lmGDE2b6WCJcQ6CYbQhrI3k3AR5c",
-  authDomain: "bko-controle.firebaseapp.com",
-  projectId: "bko-controle",
-  storageBucket: "bko-controle.firebasestorage.app",
-  messagingSenderId: "825168841483",
-  appId: "1:825168841483:web:9982b0167bdf0a343a700e"
-};
+document.addEventListener("DOMContentLoaded", () => {
 
-firebase.initializeApp(firebaseConfig);
-const dbFirestore = firebase.firestore();
+    function showView(id) {
+        document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
 
-/* 🔥 DATABASE */
-let db = JSON.parse(localStorage.getItem('BKO_DATABASE_FINAL')) || [];
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        document.querySelector(`[data-view="${id}"]`).classList.add('active');
+    }
 
-/* 🔥 CARREGAR DO FIREBASE */
-async function carregarFirebase() {
-    const snapshot = await dbFirestore.collection("viagens").get();
-    db = snapshot.docs.map(doc => doc.data());
-    localStorage.setItem('BKO_DATABASE_FINAL', JSON.stringify(db));
-    updateDash();
-}
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const view = btn.getAttribute('data-view');
+            showView(view);
+        });
+    });
 
-/* 🔥 SALVAR */
-async function salvarViagemFirebase(data) {
-    await dbFirestore.collection("viagens").add(data);
-}
-
-/* 🔥 DASH */
-function updateDash() {
-    const ok = db.filter(v => v.ap?.gg && v.ap?.mv && v.ap?.fc && v.ap?.hc).length;
-    document.getElementById('h-total').innerText = db.length;
-    document.getElementById('h-ok').innerText = ok;
-    document.getElementById('h-pend').innerText = db.length - ok;
-}
-
-/* 🔥 EXEMPLO SALVAR */
-async function salvarViagem() {
-    const data = {
-        nome: "Teste",
-        ap: {gg:false, mv:false, fc:false, hc:false}
-    };
-
-    db.push(data);
-    localStorage.setItem('BKO_DATABASE_FINAL', JSON.stringify(db));
-
-    await salvarViagemFirebase(data);
-
-    alert("Salvo Firebase + Local");
-}
-
-/* INIT */
-window.onload = () => {
-    carregarFirebase();
-};
+});
 </script>
 
 </body>
